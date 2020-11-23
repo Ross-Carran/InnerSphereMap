@@ -286,21 +286,28 @@ namespace InnerSphereMap {
         }
     }
 
+    //Rewrote this as I was having problems with a weird crash and it was happening in this method
+    //it unwraps the original results then applys Morphs original patch.
     // The original method had a rectangular normalization here -- it did 56% of the y axis
     [HarmonyPatch(typeof(StarmapRenderer), "NormalizeToMapSpace")]
     public static class StarmapRenderer_NormalizeToMapSpace_Patch {
 
-        static bool Prefix(StarmapRenderer __instance, Vector2 normalizedPos, ref Vector3 __result) {
+        static void Postfix(ref Vector3 __result) {
             // Reminder -- normalizedPos is normalized between [0,1]
             // This normalizes it between [-100,100]
-            Vector3 newResult = normalizedPos;
-            newResult.x = (newResult.x * 2f - 1f) * InnerSphereMap.SETTINGS.MapWidth;
-            newResult.y = (newResult.y * 2f - 1f) * InnerSphereMap.SETTINGS.MapHeight;
+            Vector3 newResult = __result;
+            newResult.x = newResult.x / 100f;
+            newResult.y = newResult.y / 0.5625f;
+            newResult.y = newResult.y / 100f;
+
+            newResult.x *= InnerSphereMap.SETTINGS.MapWidth;
+            newResult.y *= InnerSphereMap.SETTINGS.MapHeight;
+
+            //newResult.x = (newResult.x * 2f - 1f) * InnerSphereMap.SETTINGS.MapWidth;
+            //newResult.y = (newResult.y * 2f - 1f) * InnerSphereMap.SETTINGS.MapHeight;
             newResult.z = 0f;
 
             __result = newResult;
-
-            return false;
         }
     }
 
